@@ -15,7 +15,7 @@ import os
 
 app = FastAPI()
 
-os.environ["OPENAI_API_KEY"] =  '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' # put your openai key
+api_key = os.environ.get("OPENAI_API_KEY")
 
 # pinecone 
 

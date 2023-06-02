@@ -3,6 +3,8 @@ import json
 import os
 from dotenv import load_dotenv
 
+load_dotenv()
+
 def search_documents(search_query, k):
     # Set the endpoint and API key for your Azure Cognitive Search service
     search_endpoint = os.getenv("AZURE_COGNITIVE_SEARCH_URL")

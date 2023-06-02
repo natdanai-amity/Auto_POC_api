@@ -1,42 +1,45 @@
 import io
 import pandas as pd
 from fastapi import FastAPI, File, UploadFile, Response
-from langchain.llms import OpenAI
-from langchain.chains import LLMChain
-from langchain.vectorstores import Pinecone
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI
 from langchain.evaluation.qa import QAEvalChain
-import pinecone
+import numpy
 from utils.template import prompt_template, template
 import evaluate
 import uvicorn
 import os
+from utils.template import prompt_template,template,system_message_prompt,human_message_prompt
+from similarity_search import search_documents
+from dotenv import load_dotenv
+from langchain.chat_models import ChatOpenAI
+from langchain import PromptTemplate, LLMChain
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    AIMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
+from langchain.schema import (
+    AIMessage,
+    HumanMessage,
+    SystemMessage
+)
+from utils.translate import thai2en,en2thai
 
+load_dotenv()
 app = FastAPI()
+openai_api_key = os.getenv("OPENAI_API_KEY")
 
-api_key = os.environ.get("OPENAI_API_KEY")
+# api_key = os.environ.get("OPENAI_API_KEY")
 
 # pinecone 
 
-llm = OpenAI(temperature=0, model_name='text-davinci-003',max_tokens=500)
-
-PINECONE_API_KEY = '9ffa659d-198e-4658-b839-efe1a9c801a6'
-
-PINECONE_ENV = 'asia-northeast1-gcp'
-
 squad_metric = evaluate.load("squad")
 
-embeddings = OpenAIEmbeddings()
+chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
+chat = ChatOpenAI(temperature=0)
+chain = LLMChain(llm=chat,prompt=chat_prompt)
 
-pinecone.init(
-            api_key=PINECONE_API_KEY,  # find at app.pinecone.io
-            environment=PINECONE_ENV  # next to api key in console
-)
-index_name = "bank-live-promo"
-
-db = Pinecone.from_existing_index(embedding=embeddings,index_name=index_name)
-chain = LLMChain(llm=llm,prompt=prompt_template)
+squad_metric = evaluate.load("squad")
 
 @app.get("/")
 async def home():
@@ -56,16 +59,14 @@ async def evaluate_excel_file(file: UploadFile = File(...)):
 
     #similarity search
     for i,j in enumerate(data):
-        docs = db.similarity_search(j['question'],k=2)
+        docs = search_documents(thai2en(j['question']),k=1)
         data[i]['CONTEXT'] = docs
     
-    
-
     # Perform evaluation
     # Replace the following code with your evaluation logic
     # ...
     prediction = chain.apply(data)
-    eval_chain = QAEvalChain.from_llm(llm)
+    eval_chain = QAEvalChain.from_llm(chat)
     graded_outputs = eval_chain.evaluate(data, prediction, question_key="question", prediction_key="text")
     # Add more code or actions here based on the button click
     # Display graded outputs
@@ -93,6 +94,3 @@ async def evaluate_excel_file(file: UploadFile = File(...)):
     return Response(content=content, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', headers={'Content-Disposition': 'attachment; filename=Result.xlsx'})
     # return df
 
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)

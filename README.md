@@ -36,3 +36,13 @@ docker run -p 8000:8000 manual-validator-app
 ```
 6. Access the FastAPI application in your browser.
 Open your browser and navigate to http://localhost:8000. You should see the FastAPI application running.
+
+## How to pass excel file to API
+
+```bash
+curl -X 'POST' \
+  '<API url>/evaluate' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@<excel path>;type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ```

@@ -28,11 +28,11 @@ OPENAI_API_KEY=your_openai_api_key
 ```
 4. Build the Docker image.
 ```bash
-docker build -t my-fastapi-app .
+docker build -t manual-validator-app .
 ```
 5. Run the Docker container.
 ```bash
-docker run -p 8000:8000 my-fastapi-app
+docker run -p 8000:8000 manual-validator-app
 ```
 6. Access the FastAPI application in your browser.
 Open your browser and navigate to http://localhost:8000. You should see the FastAPI application running.

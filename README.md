@@ -46,3 +46,13 @@ curl -X 'POST' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@<excel path>;type=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   ```
+  ### Pass excel with python
+  ```bash
+import requests
+
+url = 'http://localhost:8000/evaluate'
+files = {'file': open('<excel path>', 'rb')}
+headers = {'Accept': 'application/json'}
+
+response = requests.post(url, files=files, headers=headers)
+```

@@ -36,10 +36,17 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 squad_metric = evaluate.load("squad")
 
 chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
+# chat_prompt = ChatPromptTemplate.from_messages([prompt_template])
 chat = ChatOpenAI(temperature=0)
 chain = LLMChain(llm=chat,prompt=chat_prompt)
 
 squad_metric = evaluate.load("squad")
+
+def get_query(question):
+    question = thai2en(question)
+    context = search_documents(question, 5)
+    context_all = [i['content'] for i in context]
+    return context_all, question
 
 @app.get("/")
 async def home():
@@ -59,9 +66,12 @@ async def evaluate_excel_file(file: UploadFile = File(...)):
 
     #similarity search
     for i,j in enumerate(data):
-        docs = search_documents(thai2en(j['question']),k=1)
-        data[i]['CONTEXT'] = docs
-    
+        try:
+            docs = search_documents(thai2en(j['question']),k=2)
+            data[i]['CONTEXT'] = docs
+        except:
+            print("too long")
+
     # Perform evaluation
     # Replace the following code with your evaluation logic
     # ...

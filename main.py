@@ -44,7 +44,7 @@ squad_metric = evaluate.load("squad")
 
 def get_query(question):
     question = thai2en(question)
-    context = search_documents(question, 5)
+    context = search_documents(question, 4)
     context_all = [i['content'] for i in context]
     return context_all, question
 

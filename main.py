@@ -67,7 +67,7 @@ async def evaluate_excel_file(file: UploadFile = File(...)):
     #similarity search
     for i,j in enumerate(data):
         try:
-            docs = search_documents(thai2en(j['question']),k=2)
+            docs = search_documents(thai2en(j['question']),k=4)
             data[i]['CONTEXT'] = docs
         except:
             print("too long")
